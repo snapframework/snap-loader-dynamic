@@ -13,8 +13,8 @@ library allowing Snap applications to recompile actions on the fly in
 development mode, with no performance loss in production mode.
 
 
-Building snap
-=============
+Building snap-dynamic
+=====================
 
 This library is built using
 [Cabal](http://www.haskell.org/cabal/) and
