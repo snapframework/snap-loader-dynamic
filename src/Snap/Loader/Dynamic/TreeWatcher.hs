@@ -6,15 +6,15 @@ module Snap.Loader.Dynamic.TreeWatcher
 
 ------------------------------------------------------------------------------
 import Control.Applicative
+import Data.Time.Clock
 import System.Directory
 import System.Directory.Tree
-import System.Time
 
 
 ------------------------------------------------------------------------------
 -- | An opaque representation of the contents and last modification
 -- times of a forest of directory trees.
-data TreeStatus = TS [FilePath] [AnchoredDirTree ClockTime]
+data TreeStatus = TS [FilePath] [AnchoredDirTree UTCTime]
 
 
 ------------------------------------------------------------------------------
@@ -36,5 +36,5 @@ checkTreeStatus (TS paths entries) = check <$> readModificationTimes paths
 -- | This is the core of the functions in this module.  It converts a
 -- list of filepaths into a list of 'AnchoredDirTree' annotated with
 -- the modification times of the files located in those paths.
-readModificationTimes :: [FilePath] -> IO [AnchoredDirTree ClockTime]
+readModificationTimes :: [FilePath] -> IO [AnchoredDirTree UTCTime]
 readModificationTimes = mapM $ readDirectoryWith getModificationTime
