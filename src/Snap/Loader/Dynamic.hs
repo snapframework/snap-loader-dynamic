@@ -83,7 +83,7 @@ getHintOpts :: [String] -> [String]
 getHintOpts args = removeBad opts
   where
     --------------------------------------------------------------------------
-    bad       = ["-threaded", "-O", "-main-is", "-o"]
+    bad       = ["-threaded", "-O", "-main-is", "-o", "--make"]
 
     --------------------------------------------------------------------------
     removeBad = filter (\x -> not $ any (`isPrefixOf` x) bad)
