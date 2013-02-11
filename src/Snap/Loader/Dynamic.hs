@@ -92,9 +92,7 @@ getHintOpts args = removeBad opts
     hideAll   = filter (== "-hide-all-packages") args
 
     --------------------------------------------------------------------------
-    srcOpts   = filter (\x -> "-i" `isPrefixOf` x
-                              && not ("-idist" `isPrefixOf` x))
-                       args
+    srcOpts   = filter (\x -> "-i" `isPrefixOf` x) args
 
     --------------------------------------------------------------------------
     toCopy    = filter (not . isSuffixOf ".hs") $
