@@ -161,7 +161,11 @@ hintSnap opts modules srcPaths action value =
     --------------------------------------------------------------------------
     interpreter = do
         loadModules . nub $ modules
-        setImports . nub $ "Prelude" : "Snap.Core" : witnessModules ++ modules
+        setImports . nub $ "Prelude"
+                         : "Snap.Core"
+                         : "Snap.Snaplet.Config"
+                         : witnessModules
+                        ++ modules
 
         f <- interpret action witness
         return $ f value
