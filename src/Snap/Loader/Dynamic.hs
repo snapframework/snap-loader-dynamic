@@ -142,11 +142,27 @@ hintSnap :: Typeable a
          -> IO (Snap (), IO ())
 hintSnap opts modules srcPaths action value =
     protectedHintEvaluator initialize test loader
-
   where
     --------------------------------------------------------------------------
     witness x = undefined $ x `asTypeOf` value :: HintLoadable
 
+#if MIN_VERSION_base(4,7,0)
+    --------------------------------------------------------------------------
+    witnessModules = filter (`notElem` inPrelude) . map dropInternal .
+                     map tyConModule . tyCons . typeOf $ witness
+
+    --------------------------------------------------------------------------
+    inPrelude = ["GHC.Prim", "GHC.Types", "GHC.Tuple"]
+
+    --------------------------------------------------------------------------
+    tyCons x = let (c, rs) = splitTyConApp x in c : concatMap tyCons rs
+
+    --------------------------------------------------------------------------
+    dropInternal s = case stripPrefix "Snap.Internal." s of
+        Nothing -> s
+        Just x  -> "Snap." ++ x
+
+#else
     --------------------------------------------------------------------------
     -- This is somewhat fragile, and probably can be cleaned up with a future
     -- version of Typeable. For the moment, and backwards-compatibility, this
@@ -157,6 +173,7 @@ hintSnap opts modules srcPaths action value =
 
     --------------------------------------------------------------------------
     typePart x y = (isAlphaNum x && isAlphaNum  y) || x == '.' || y == '.'
+#endif
 
     --------------------------------------------------------------------------
     interpreter = do
