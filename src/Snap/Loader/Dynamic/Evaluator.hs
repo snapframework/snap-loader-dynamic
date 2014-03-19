@@ -75,27 +75,28 @@ protectedHintEvaluator start test getInternals = do
                     -- previous state, if there was any, and then begin
                     -- evaluation of the new code and state.
                     when (null readers) $ do
-                        let runAndFill = block $ do
+                        let runAndFill = mask $ \unmask -> do
                                 -- run the cleanup action
                                 previous <- readMVar resultContainer
-                                unblock $ cleanup previous
+                                unmask $ cleanup previous
 
                                 -- compile the new internals and initialize
-                                stateInitializer <- unblock getInternals
-                                res <- unblock stateInitializer
+                                stateInitializer <- unmask getInternals
+                                res <- unmask stateInitializer
 
                                 let a = fst res
 
-                                clearAndNotify (Right res)
+                                clearAndNotify unmask (Right res)
                                                (flip putMVar a . snd)
 
                             killWaiting :: SomeException -> IO ()
-                            killWaiting e = block $ do
-                                clearAndNotify (Left e) (flip throwTo e . fst)
+                            killWaiting e = mask $ \unmask -> do
+                                clearAndNotify unmask (Left e)
+                                               (flip throwTo e . fst)
                                 throwIO e
 
-                            clearAndNotify r f = do
-                                a <- unblock start
+                            clearAndNotify unmask r f = do
+                                a <- unmask start
                                 _ <- swapMVar resultContainer $ Just (r, a)
                                 allReaders <- swapMVar readerContainer []
                                 mapM_ f allReaders
