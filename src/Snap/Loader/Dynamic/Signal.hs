@@ -1,10 +1,6 @@
 {-# LANGUAGE CPP #-}
 module Snap.Loader.Dynamic.Signal (protectHandlers) where
 
-------------------------------------------------------------------------------
-import Control.Exception (bracket)
-
-
 #ifdef mingw32_HOST_OS
 
                                  -------------
@@ -16,8 +12,8 @@ import GHC.ConsoleHandler as C
 saveHandlers :: IO C.Handler
 saveHandlers = C.installHandler Ignore
 
-restoreHandlers :: C.Handler -> IO C.Handler
-restoreHandlers = C.installHandler
+restoreHandlers :: C.Handler -> IO ()
+restoreHandlers = C.installHandler >> return ()
 ------------------------------------------------------------------------------
 
 
@@ -42,8 +38,8 @@ signals = [ S.sigQUIT
 saveHandlers :: IO [S.Handler]
 saveHandlers = mapM (helper S.Ignore) signals
 
-restoreHandlers :: [S.Handler] -> IO [S.Handler]
-restoreHandlers h = sequence $ zipWith helper h signals
+restoreHandlers :: [S.Handler] -> IO ()
+restoreHandlers h = sequence_ $ zipWith helper h signals
 ------------------------------------------------------------------------------
 
 #endif
@@ -52,6 +48,8 @@ restoreHandlers h = sequence $ zipWith helper h signals
                                   -- both --
                                   ----------
 ------------------------------------------------------------------------------
-protectHandlers :: IO a -> IO a
-protectHandlers a = bracket saveHandlers restoreHandlers $ const a
+protectHandlers :: IO (IO ())
+protectHandlers = do
+    h <- saveHandlers
+    return $ restoreHandlers h
 ------------------------------------------------------------------------------

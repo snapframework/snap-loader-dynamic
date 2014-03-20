@@ -11,13 +11,14 @@ module Snap.Loader.Dynamic
   ) where
 
 ------------------------------------------------------------------------------
-import           Control.Monad (liftM2)
+import           Control.Concurrent
+import           Control.Monad (liftM2, forever)
 import           Data.Char (isAlphaNum)
 import           Data.List
 import           Data.Maybe (maybeToList)
 import           Data.Time.Clock (diffUTCTime, getCurrentTime)
 import           Data.Typeable
-import           Language.Haskell.Interpreter hiding (lift, liftIO, typeOf)
+import           Language.Haskell.Interpreter hiding (lift, typeOf)
 import           Language.Haskell.Interpreter.Unsafe
 import           Language.Haskell.TH
 import           System.Environment (getArgs)
@@ -140,8 +141,9 @@ hintSnap :: Typeable a
          -> a
              -- ^ The value to apply the loaded function to
          -> IO (Snap (), IO ())
-hintSnap opts modules srcPaths action value =
-    protectedHintEvaluator initialize test loader
+hintSnap opts modules srcPaths action value = do
+    load <- runInterpreterThread
+    protectedHintEvaluator getCurrentState testState load
   where
     --------------------------------------------------------------------------
     witness x = undefined $ x `asTypeOf` value :: HintLoadable
@@ -161,7 +163,6 @@ hintSnap opts modules srcPaths action value =
     dropInternal s = case stripPrefix "Snap.Internal." s of
         Nothing -> s
         Just x  -> "Snap." ++ x
-
 #else
     --------------------------------------------------------------------------
     -- This is somewhat fragile, and probably can be cleaned up with a future
@@ -176,28 +177,38 @@ hintSnap opts modules srcPaths action value =
 #endif
 
     --------------------------------------------------------------------------
-    interpreter = do
-        loadModules . nub $ modules
-        setImports . nub $ "Prelude" : "Snap.Core" : witnessModules ++ modules
+    runInterpreterThread = do
+        input  <- newEmptyMVar
+        output <- newEmptyMVar    
+        
+        forkIO . forever $ do
+            restore <- protectHandlers
+            err <- unsafeRunInterpreterWithArgs opts $ do
+                liftIO $ restore
+                forever $ do
+                    liftIO $ takeMVar input
 
-        f <- interpret action witness
-        return $ f value
+                    loadModules . nub $ modules
+                    setImports . nub $ "Prelude" : "Snap.Core" :
+                        witnessModules ++ modules
+                    f <- interpret action witness
 
-    --------------------------------------------------------------------------
-    loadInterpreter = unsafeRunInterpreterWithArgs opts interpreter
+                    liftIO . putMVar output $ f value
+                    reset
+
+            putMVar output $ formatOnError err
+
+        return $ putMVar input () >> takeMVar output
 
     --------------------------------------------------------------------------
     formatOnError (Left err) = error $ format err
     formatOnError (Right a) = a
 
     --------------------------------------------------------------------------
-    loader = formatOnError `fmap` protectHandlers loadInterpreter
+    getCurrentState = liftM2 (,) getCurrentTime $ getTreeStatus srcPaths
 
     --------------------------------------------------------------------------
-    initialize = liftM2 (,) getCurrentTime $ getTreeStatus srcPaths
-
-    --------------------------------------------------------------------------
-    test (prevTime, ts) = do
+    testState (prevTime, ts) = do
         now <- getCurrentTime
         if diffUTCTime now prevTime < 3
             then return True
