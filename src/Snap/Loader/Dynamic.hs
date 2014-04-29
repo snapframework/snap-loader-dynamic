@@ -161,8 +161,9 @@ hintSnap opts modules srcPaths action value = do
 
     --------------------------------------------------------------------------
     dropInternal s = case stripPrefix "Snap.Internal." s of
-        Nothing -> s
-        Just x  -> "Snap." ++ x
+        Nothing      -> s
+        Just "Types" -> "Snap.Core"
+        Just x       -> "Snap." ++ x
 #else
     --------------------------------------------------------------------------
     -- This is somewhat fragile, and probably can be cleaned up with a future
