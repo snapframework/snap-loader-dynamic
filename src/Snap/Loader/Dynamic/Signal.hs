@@ -13,7 +13,7 @@ saveHandlers :: IO C.Handler
 saveHandlers = C.installHandler Ignore
 
 restoreHandlers :: C.Handler -> IO ()
-restoreHandlers = C.installHandler >> return ()
+restoreHandlers h = C.installHandler h >> return ()
 ------------------------------------------------------------------------------
 
 
