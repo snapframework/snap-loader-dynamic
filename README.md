@@ -1,10 +1,9 @@
 Snap Framework
 ==============
 
-Snap is a web framework for Haskell, based on iteratee I/O (as [popularized by
-Oleg Kiselyov](http://okmij.org/ftp/Streams.html#iteratee)).  For more
-information about Snap, read the `README.SNAP.md` or visit the Snap project
-website at http://www.snapframework.com/.
+Snap is a simple and fast web development framework and server written in
+Haskell.  For more information about Snap, read the `README.SNAP.md` or visit
+the Snap project website at http://www.snapframework.com/.
 
 ## Library contents
 
@@ -29,4 +28,3 @@ from the `snap-loader-dynamic` toplevel directory.
 The haddock documentation can be built using 'cabal haddock'.
 
 The docs get put in `dist/doc/html/`.
-
