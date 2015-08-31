@@ -16,3 +16,4 @@ docs/templates/out
 sitekey.txt
 test/test-cabal-dev
 test/test-snap-exe
+cabal.sandbox.config
