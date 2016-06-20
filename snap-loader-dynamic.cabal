@@ -33,12 +33,12 @@ Library
     directory-tree    >= 0.10    && < 0.13,
     mtl               >  2.0     && < 2.3,
     snap-core         >= 1.0     && < 1.1,
-    time              >= 1.1     && < 1.6,
-    template-haskell  >= 2.2     && < 2.11
+    time              >= 1.1     && < 1.7,
+    template-haskell  >= 2.2     && < 2.12
 
   if impl(ghc >= 7.2.0)
     build-depends:
-      hint              >= 0.3.3.1 && < 0.5
+      hint              >= 0.3.3.1 && < 0.7
   else
     build-depends:
       hint              >= 0.3.3.1 && < 0.3.3.5
