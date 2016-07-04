@@ -24,6 +24,7 @@ import           Language.Haskell.Interpreter hiding (lift, typeOf)
 import           Language.Haskell.Interpreter.Unsafe
 import           Language.Haskell.TH
 import           System.Environment (getArgs)
+import           Snap.Core
 import           Snap.Loader.Dynamic.Signal
 import           Snap.Loader.Dynamic.Evaluator
 import           Snap.Loader.Dynamic.TreeWatcher
@@ -127,21 +128,21 @@ getSrcPaths = filter (not . null) . map (drop 2) . filter srcArg
 -- a call to it at compile-time, calculating all the arguments from its
 -- environment.
 --
---hintSnap :: Typeable a
---         => [String]
---             -- ^ A list of command-line options for the interpreter
---         -> [String]
---             -- ^ A list of modules that need to be interpreted. This should
---             -- contain only the modules which contain the initialization,
---             -- cleanup, and handler actions. Everything else they require will
---             -- be loaded transitively.
---         -> [String]
---             -- ^ A list of paths to watch for updates
---         -> String
---             -- ^ The name of the function to load
---         -> a
---             -- ^ The value to apply the loaded function to
---         -> IO (Snap (), IO ())
+hintSnap :: Typeable a
+         => [String]
+             -- ^ A list of command-line options for the interpreter
+         -> [String]
+             -- ^ A list of modules that need to be interpreted. This should
+             -- contain only the modules which contain the initialization,
+             -- cleanup, and handler actions. Everything else they require will
+             -- be loaded transitively.
+         -> [String]
+             -- ^ A list of paths to watch for updates
+         -> String
+             -- ^ The name of the function to load
+         -> a
+             -- ^ The value to apply the loaded function to
+         -> IO (Snap (), IO ())
 hintSnap opts modules srcPaths action value = do
     load <- runInterpreterThread
     protectedHintEvaluator getCurrentState testState load
@@ -181,8 +182,8 @@ hintSnap opts modules srcPaths action value = do
     --------------------------------------------------------------------------
     runInterpreterThread = do
         input  <- newEmptyMVar
-        output <- newEmptyMVar    
-        
+        output <- newEmptyMVar
+
         forkIO . forever $ do
             restore <- protectHandlers
             err <- unsafeRunInterpreterWithArgs opts $ do
