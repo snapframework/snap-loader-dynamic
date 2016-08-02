@@ -1,6 +1,8 @@
 Snap Framework
 ==============
 
+[![Build Status](https://travis-ci.org/snapframework/snap-loader-dynamic.svg?branch=no-snap-dep)](https://travis-ci.org/snapframework/snap-loader-dynamic)
+
 Snap is a simple and fast web development framework and server written in
 Haskell.  For more information about Snap, read the `README.SNAP.md` or visit
 the Snap project website at http://www.snapframework.com/.

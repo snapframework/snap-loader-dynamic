@@ -1,5 +1,6 @@
 #*#
 **/.DS_Store
+dist-newstyle/
 *.hi
 *.log
 *.o
@@ -17,3 +18,4 @@ sitekey.txt
 test/test-cabal-dev
 test/test-snap-exe
 cabal.sandbox.config
+.cabal-sandbox/
