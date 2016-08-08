@@ -13,7 +13,9 @@ module Snap.Loader.Dynamic
 ------------------------------------------------------------------------------
 import           Control.Concurrent
 import           Control.Monad (liftM2, forever)
+#if !MIN_VERSION_base(4,7,0)
 import           Data.Char (isAlphaNum)
+#endif
 import           Data.List
 import           Data.Maybe (maybeToList)
 import           Data.Time.Clock (diffUTCTime, getCurrentTime)

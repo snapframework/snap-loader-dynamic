@@ -6,12 +6,11 @@ module Snap.Loader.Dynamic.Evaluator
   ) where
 
 ------------------------------------------------------------------------------
-import Control.Exception
+import qualified Control.Exception as Ex
 import Control.Monad (when)
 import Control.Monad.Trans (liftIO)
 import Control.Concurrent (ThreadId, forkIO, myThreadId)
 import Control.Concurrent.MVar
-import Prelude hiding (catch, init, any)
 import Snap.Core (Snap)
 
 
@@ -75,7 +74,7 @@ protectedHintEvaluator start test getInternals = do
                     -- previous state, if there was any, and then begin
                     -- evaluation of the new code and state.
                     when (null readers) $ do
-                        let runAndFill = mask $ \unmask -> do
+                        let runAndFill = Ex.mask $ \unmask -> do
                                 -- run the cleanup action
                                 previous <- readMVar resultContainer
                                 unmask $ cleanup previous
@@ -89,11 +88,11 @@ protectedHintEvaluator start test getInternals = do
                                 clearAndNotify unmask (Right res)
                                                (flip putMVar a . snd)
 
-                            killWaiting :: SomeException -> IO ()
-                            killWaiting e = mask $ \unmask -> do
+                            killWaiting :: Ex.SomeException -> IO ()
+                            killWaiting e = Ex.mask $ \unmask -> do
                                 clearAndNotify unmask (Left e)
-                                               (flip throwTo e . fst)
-                                throwIO e
+                                               (flip Ex.throwTo e . fst)
+                                Ex.throwIO e
 
                             clearAndNotify unmask r f = do
                                 a <- unmask start
@@ -101,7 +100,7 @@ protectedHintEvaluator start test getInternals = do
                                 allReaders <- swapMVar readerContainer []
                                 mapM_ f allReaders
 
-                        _ <- forkIO $ runAndFill `catch` killWaiting
+                        _ <- forkIO $ runAndFill `Ex.catch` killWaiting
                         return ()
 
                     -- Wait for the evaluation of the action to complete,
@@ -116,7 +115,7 @@ protectedHintEvaluator start test getInternals = do
                     valid <- test a
                     case (valid, res) of
                         (True, Right (x, _)) -> return x
-                        (True, Left e)       -> throwIO e
+                        (True, Left e)       -> Ex.throwIO e
                         (False, _)           -> waitForNewResult
                 Nothing -> waitForNewResult
             getResult
@@ -133,7 +132,7 @@ protectedHintEvaluator start test getInternals = do
     newReaderContainer :: IO (MVar [(ThreadId, MVar (Snap ()))])
     newReaderContainer = newMVar []
 
-    newResultContainer :: IO (MVar (Maybe (Either SomeException
+    newResultContainer :: IO (MVar (Maybe (Either Ex.SomeException
                                                   (Snap (), IO ()), a)))
     newResultContainer = newMVar Nothing
 
