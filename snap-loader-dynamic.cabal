@@ -1,5 +1,5 @@
 name:           snap-loader-dynamic
-version:        1.0.0.0
+version:        1.0.0.1
 synopsis:       Snap dynamic loader
 description:    Snap Framework dynamic code loader for development mode
 license:        BSD3
